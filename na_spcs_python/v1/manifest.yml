@@ -1,0 +1,34 @@
+manifest_version: 1
+version:
+  name: V1
+  label: "First Version"
+
+artifacts:
+  setup_script: setup.sql
+  container_services:
+    images:
+      - /spcs_app/napp/img_repo/eap_frontend
+      - /spcs_app/napp/img_repo/eap_backend
+      - /spcs_app/napp/img_repo/eap_router
+
+privileges:
+  - BIND SERVICE ENDPOINT:
+      description: "Ability to create ingress URLs."
+
+references:
+  - ORDERS_TABLE:
+      label: "Orders table"
+      description: "Orders table in TPC-H samples"
+      privileges:
+        - SELECT
+      object_type: VIEW
+      multi_valued: false
+      register_callback: v1.register_single_callback
+# - STREAMLIT_WAREHOUSE:
+#     label: "Streamlit Warehouse"
+#     description: "Warehouse to use with Streamlit in SPCS"
+#     privileges:
+#       - USAGE
+#     object_type: WAREHOUSE
+#     multi_valued: false
+#     register_callback: v1.register_single_callback
