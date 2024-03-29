@@ -2,8 +2,8 @@ from flask import Blueprint, request, abort, make_response, jsonify
 import datetime
 import snowflake.snowpark.functions as f
 
-from spcs_helpers.connection import session as snow_session
-session = snow_session()
+import spcs_helpers
+session = spcs_helpers.session()
 
 # Make the API endpoints
 snowpark = Blueprint('snowpark', __name__)

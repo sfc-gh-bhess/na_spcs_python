@@ -44,7 +44,7 @@ END
 $$;
 GRANT USAGE ON PROCEDURE app_public.start_app(VARCHAR) TO APPLICATION ROLE app_admin;
 
-CREATE OR REPLACE PROCEDURE app_public.start_app(pool_name VARCHAR, wh_name VARCHAR)
+CREATE OR REPLACE PROCEDURE app_public.start_app(pool_name VARCHAR, wh_name VARCHAR, eai_name VARCHAR)
     RETURNS string
     LANGUAGE sql
     AS $$
@@ -52,14 +52,16 @@ BEGIN
     EXECUTE IMMEDIATE 'CREATE SERVICE IF NOT EXISTS app_public.st_spcs
         IN COMPUTE POOL Identifier(''' || pool_name || ''')
         SPECIFICATION_FILE=fullstack.yaml
-        QUERY_WAREHOUSE=''' || wh_name || '''';
+        QUERY_WAREHOUSE=''' || wh_name || '''
+        EXTERNAL_ACCESS_INTEGRATIONS=( ''' || Upper(eai_name) || ''' )'
+        ;
     ;
     GRANT USAGE ON SERVICE app_public.st_spcs TO APPLICATION ROLE app_user;
 
     RETURN 'Service started. Check status, and when ready, get URL';
 END
 $$;
-GRANT USAGE ON PROCEDURE app_public.start_app(VARCHAR, VARCHAR) TO APPLICATION ROLE app_admin;
+GRANT USAGE ON PROCEDURE app_public.start_app(VARCHAR, VARCHAR, VARCHAR) TO APPLICATION ROLE app_admin;
 
 CREATE OR REPLACE PROCEDURE app_public.stop_app()
     RETURNS string

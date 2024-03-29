@@ -15,6 +15,16 @@ CALL spcs_app_instance.v1.register_single_callback(
 --   This is a temporary step. In the future this will be done via the Permissions SDK, 
 --   but SERVICE QUERY_WAREHOUSE does not support References today.
 GRANT USAGE ON WAREHOUSE wh_nac TO APPLICATION spcs_app_instance;
+-- Create EXTERNAL ACCESS INTEGRATION for webpage to load image from external source
+--   This is a temporary step. In the future this will be done via the Permissions SDK.
+CREATE OR REPLACE NETWORK RULE nac_test.data.nr_wiki
+    MODE = EGRESS
+    TYPE = HOST_PORT
+    VALUE_LIST = ('upload.wikimedia.org');
+CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION eai_wiki
+  ALLOWED_NETWORK_RULES = ( nac_test.data.nr_wiki )
+  ENABLED = true;
+GRANT USAGE ON INTEGRATION eai_wiki TO APPLICATION spcs_app_instance;
 
 -- Create the COMPUTE POOL for the APPLICATION
 DROP COMPUTE POOL IF EXISTS pool_nac;
@@ -27,7 +37,7 @@ DESCRIBE COMPUTE POOL pool_nac;
 -- Wait until COMPUTE POOL state returns `IDLE` or `ACTIVE`
 
 -- Start the app
-CALL spcs_app_instance.app_public.start_app('POOL_NAC', 'WH_NAC');
+CALL spcs_app_instance.app_public.start_app('POOL_NAC', 'WH_NAC', 'EAI_WIKI');
 -- Grant usage of the app to others
 GRANT APPLICATION ROLE spcs_app_instance.app_user TO ROLE sandbox;
 -- Get the URL for the app

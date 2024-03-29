@@ -15,6 +15,16 @@ CALL spcs_app_instance.v1.register_single_callback(
   'ORDERS_TABLE' , 'ADD', SYSTEM$REFERENCE('VIEW', 'NAC_TEST.DATA.ORDERS', 'PERSISTENT', 'SELECT'));
 -- Grant access to the query warehouse via SQL
 GRANT USAGE ON WAREHOUSE wh_nac TO APPLICATION spcs_app_instance;
+-- Create EXTERNAL ACCESS INTEGRATION for webpage to load image from external source
+--   This is a temporary step. In the future this will be done via the Permissions SDK.
+CREATE OR REPLACE NETWORK RULE nr_wiki
+    MODE = EGRESS
+    TYPE = HOST_PORT
+    VALUE_LIST = ('upload.wikimedia.org');
+CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION eai_wiki
+  ALLOWED_NETWORK_RULES = ( nr_wiki )
+  ENABLED = true;
+GRANT USAGE ON INTEGRATION eai_wiki TO APPLICATION spcs_app_instance;
 
 DROP COMPUTE POOL IF EXISTS pool_nac;
 CREATE COMPUTE POOL pool_nac FOR APPLICATION spcs_app_instance
