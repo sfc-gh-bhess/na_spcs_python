@@ -1,0 +1,53 @@
+manifest_version: 1
+version:
+  name: V2
+  label: "Second Version"
+
+artifacts:
+  readme: readme.md
+  setup_script: setup.sql
+  default_web_endpoint:
+    service: app_public.frontend
+    endpoint: app
+  container_services:
+    uses_gpu: false
+    images:
+    - /spcs_app/napp/img_repo/eap_backend
+    - /spcs_app/napp/img_repo/eap_frontend
+    - /spcs_app/napp/img_repo/eap_router
+
+privileges:
+  - CREATE COMPUTE POOL:
+      description: "Allow application to create its own compute pool(s)"
+  - BIND SERVICE ENDPOINT:
+      description: "Ability to create ingress URLs."
+  - CREATE WAREHOUSE:
+      description: "Allow application to create its own warehouse(s)"
+
+configuration:
+  grant_callback: config.grant_callback
+  log_level: INFO
+
+lifecycle_callbacks:
+  version_initializer: config.version_initializer
+
+references:
+  - ORDERS_TABLE:
+      label: "Orders table"
+      description: "Orders table in TPC-H samples"
+      privileges:
+        - SELECT
+      object_type: VIEW
+      multi_valued: false
+      register_callback: config.reference_callback
+
+  - EGRESS_EAI_WIKIPEDIA:
+      label: "Egress External Access Integration for Wikipedia"
+      description: "EAI for Egress from NA+SPCS to Wikipedia"
+      privileges: 
+        - USAGE
+      object_type: EXTERNAL_ACCESS_INTEGRATION
+      multi_valued: false
+      register_callback: config.reference_callback
+      configuration_callback: config.configuration_callback
+      required_at_setup: true

@@ -51,8 +51,8 @@ make all
 
 This will create the 1 container image and push it to the IMAGE REPOSITORY.
 
-Next, you need to upload the files in the `na_spcs_python/v1` directory into the stage 
-`SPCS_APP.NAPP.APP_STAGE` in the folder `na_spcs_python/v1`.
+Next, you need to upload the files in the `na_spcs_python/v2` directory into the stage 
+`SPCS_APP.NAPP.APP_STAGE` in the folder `na_spcs_python/v2`.
 
 To create the VERSION for the APPLICATION PACKAGE, run the following commands
 (they are also in `provider_version.sql`):
@@ -60,7 +60,7 @@ To create the VERSION for the APPLICATION PACKAGE, run the following commands
 ```
 USE ROLE naspcs_role;
 -- for the first version of a VERSION
-ALTER APPLICATION PACKAGE na_spcs_python_pkg ADD VERSION v1 USING @spcs_app.napp.app_stage/na_spcs_python/v1;
+ALTER APPLICATION PACKAGE na_spcs_python_pkg ADD VERSION v2 USING @spcs_app.napp.app_stage/na_spcs_python/v2;
 ```
 
 If you need to iterate, you can create a new PATCH for the version by running this
@@ -69,7 +69,7 @@ instead:
 ```
 USE ROLE naspcs_role;
 -- for subsequent updates to version
-ALTER APPLICATION PACKAGE na_spcs_python_pkg ADD PATCH FOR VERSION v1 USING @spcs_app.napp.app_stage/na_spcs_python/v1;
+ALTER APPLICATION PACKAGE na_spcs_python_pkg ADD PATCH FOR VERSION v2 USING @spcs_app.napp.app_stage/na_spcs_python/v2;
 ```
 
 ### Testing on the Provider Side
@@ -79,45 +79,44 @@ We can test our Native App on the Provider by mimicking what it would look like 
 Consumer side (a benefit/feature of the Snowflake Native App Framework).
 
 To do this, run the commands in `consumer_setup.sql`. This will create the role, 
-virtual warehouse, database, schema,  VIEW of the TPC-H data, and COMPUTE POOL necessary 
-for the Native App. The ROLE you will use for this is `NAC`.
+virtual warehouse for install, database, schema,  VIEW of the TPC-H data, and 
+permissions necessary to configure the Native App. The ROLE you will use for this is `NAC`.
 
 #### Testing on the Provider Side
-To install the Native App we need to install it, and also give it some privileges:
-* Usage on a COMPUTE POOL
-* Usage for a Virtual Warehouse for the Streamlit app to issue queries
-* Access to the TPC-H data
+First, let's install the Native App.
 
-Run the commands in `provider_test.sql`. After creating the COMPUTE POOL
-you will want to wait for the COMPUTE POOL to move to the `READY` or `IDLE`
-state before moving on to starting the app.
+Run the commands in `provider_test.sql`.
 
-Before starting the app, we will want to grant some privileges to the app:
-* the `BIND SERVICE ENDPOINT` permission so we can create an ingress URL
-* usage on a virtual warehouse
-* `SELECT` permissions on the TPC-H data
+Next we need to configure the Native App. We can do this via Snowsight by
+visiting the Apps tab and clicking on our Native App `NA_SPCS_PYTHON_APP`.
+* Click the "Grant" button to grant the necessary privileges
+* Click the "Review" button to open the dialog to create the
+  necessary `EXTERNAL ACCESS INTEGRATION`. Review the dialog and
+  click "Connect".
 
-These commands are also in `provider_test.sql`.
+At this point, you should now see an "Activate" button in the top right.
+Click it to activate the app.
 
-Next, start the app by running `start_app()`. 
-After running `start_app()`, you will need to be patient as it takes a few 
-moments to get the endpoint provisioned. You can
-call `app_url()` to get the URL. If it is not yet provisioned, it will return a
-message. When it is ready, it will return a URL you can paste into your browser.
+Once it has successfully activated, the "Activate" button will be replaced
+with a "Launch app" button. Click the "Launch app" button to open the
+containerized web app in a new tab.
+
 At this point, you can also grant access to the ingress endpoint by granting
 the APPLICATION ROLE `app_user` to a normal user role. Users with that role can
 then visit the URL.
 
+If you need to get the URL via SQL, you can call a stored procedure 
+in the Native App, `app_public.app_url()`.
 
 ##### Cleanup
 To clean up the Native App test install, you can just `DROP` it:
 
 ```
-DROP APPLICATION NA_SPCS_PYTHON_instance;
+DROP APPLICATION na_spcs_python_app CASCADE;
 ```
-
-You can also drop the COMPUTE POOL (`POOL_NAC`), the WAREHOUSE (`WH_NAC`), 
-and the ROLE (`NAC`);
+The `CASCADE` will also drop the `WAREHOUSE` and `COMPUTE POOL` that the
+Application created, along with the `EXTERNAL ACCESS INTEGRATION` that 
+the Application prompted the Consumer to create.
 
 ### Publishing/Sharing your Native App
 You Native App is now ready on the Provider Side. You can make the Native App available
@@ -126,7 +125,7 @@ in the Snowsight UI.
 
 Navigate to the "Apps" tab and select "Packages" at the top. Now click on your App Package 
 (`NA_SPCS_PYTHON_PKG`). From here you can click on "Set release default" and choose the latest patch
-(the largest number) for version `v1`. 
+(the largest number) for version `v2`. 
 
 Next, click "Share app package". This will take you to the Provider Studio. Give the listing
 a title, choose "Only Specified Consumers", and click "Next". For "What's in the listing?", 
@@ -147,32 +146,29 @@ To get the Native app, navigate to the "Apps" sidebar. You should see the app at
 Under "Application name", choose the name `NA_SPCS_PYTHON_APP` (You _can_ choose a 
 different name, but the scripts use `NA_SPCS_PYTHON_APP`). Click "Get".
 
-Run the commands in `consumer.sql`. After creating the COMPUTE POOL
-you will want to wait for the COMPUTE POOL to move to the `READY` or `IDLE`
-state before moving on to starting the app.
+Next we need to configure the Native App. We can do this via Snowsight by
+visiting the Apps tab and clicking on our Native App `NA_SPCS_PYTHON_APP`.
+* Click the "Grant" button to grant the necessary privileges
+* Click the "Review" button to open the dialog to create the
+  necessary `EXTERNAL ACCESS INTEGRATION`. Review the dialog and
+  click "Connect".
 
-Before starting the app, we will want to grant some privileges to the app:
-* the `BIND SERVICE ENDPOINT` permission so we can create an ingress URL
-* usage on a virtual warehouse
-* `SELECT` permissions on the TPC-H data
+At this point, you should now see an "Activate" button in the top right.
+Click it to activate the app.
 
-These commands are also in `consumer.sql`.
+Once it has successfully activated, the "Activate" button will be replaced
+with a "Launch app" button. Click the "Launch app" button to open the
+containerized web app in a new tab.
 
-Next, start the app by running `start_app()`. 
-After running `start_app()`, you will need to be patient as it takes a few 
-moments to get the endpoint provisioned. You can
-call `app_url()` to get the URL. If it is not yet provisioned, it will return a
-message. When it is ready, it will return a URL you can paste into your browser.
 At this point, you can also grant access to the ingress endpoint by granting
 the APPLICATION ROLE `app_user` to a normal user role. Users with that role can
 then visit the URL.
 
+If you need to get the URL via SQL, you can call a stored procedure 
+in the Native App, `app_public.app_url()`.
+
 ##### Cleanup
 To clean up the Native App, you can just uninstall it from the "Apps" tab.
-
-You can also drop the COMPUTE POOL (`GPU_3`), the WAREHOUSE (`WH_NAC`), 
-and the ROLE (`NAC`);
-
 
 #### Debugging
 I added some debugging Stored Procedures to allow the Consumer to see the status
