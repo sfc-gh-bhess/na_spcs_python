@@ -190,7 +190,7 @@ An example of how to enable logging for a particular account (for example, accou
 `ABC12345`) to give them all the debugging permissions would be
 
 ```
-INSERT INTO llama2_pkg.shared_data.feature_flags 
+INSERT INTO na_spcs_python_pkg.shared_data.feature_flags 
   SELECT parse_json('{"debug": ["GET_SERVICE_STATUS", "GET_SERVICE_LOGS"]}') AS flags, 
          'ABC12345' AS acct;
 ```
@@ -198,7 +198,7 @@ INSERT INTO llama2_pkg.shared_data.feature_flags
 To enable on the Provider account for use while developing on the Provider side, you could run
 
 ```
-INSERT INTO llama2_pkg.shared_data.feature_flags 
+INSERT INTO na_spcs_python_pkg.shared_data.feature_flags 
   SELECT parse_json('{"debug": ["GET_SERVICE_STATUS", "GET_SERVICE_LOGS"]}') AS flags,
          current_account() AS acct;
 ```

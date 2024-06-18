@@ -614,7 +614,7 @@ CREATE OR REPLACE PROCEDURE config.create_service_frontend()
         SYSTEM$LOG_INFO('NA_SPCS_PYTHON: create_service_frontend: waiting on service start');
         SELECT SYSTEM$WAIT_FOR_SERVICES(300, 'APP_PUBLIC.FRONTEND');
         SYSTEM$LOG_INFO('NA_SPCS_PYTHON: create_service_frontend: granting usage');
-        GRANT USAGE ON SERVICE app_public.frontend TO APPLICATION ROLE app_user;
+        GRANT SERVICE ROLE app_public.frontend!app TO APPLICATION ROLE app_user;
 
         SYSTEM$LOG_INFO('NA_SPCS_PYTHON: create_service_frontend: finished!');
         RETURN true;
@@ -779,8 +779,6 @@ CREATE OR REPLACE PROCEDURE config.create_service_backend()
 
         SYSTEM$LOG_INFO('NA_SPCS_PYTHON: create_service_backend: waiting on service start');
         SELECT SYSTEM$WAIT_FOR_SERVICES(300, 'APP_PUBLIC.BACKEND');
-        SYSTEM$LOG_INFO('NA_SPCS_PYTHON: create_service_backend: granting usage');
-        GRANT USAGE ON SERVICE app_public.backend TO APPLICATION ROLE app_user;
 
         SYSTEM$LOG_INFO('NA_SPCS_PYTHON: create_service_backend: finished!');
         RETURN true;

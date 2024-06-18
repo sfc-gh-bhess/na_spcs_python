@@ -13,3 +13,7 @@ spec:
     - name: app
       port: 8000
       public: true
+serviceRoles:
+- name: app
+  endpoints:
+  - app
